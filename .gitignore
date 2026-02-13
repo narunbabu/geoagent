@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (never commit proprietary data)
+*.sgy
+*.segy
+*.las
+*.pkl
+*.pickle
+data/
+sample_data/
+
+# Output
+output/
+figures/
+*.png
+*.jpg
+*.pdf
+*.pptx
+*.docx
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
