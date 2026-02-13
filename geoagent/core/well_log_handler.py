@@ -20,20 +20,13 @@ class WellLogHandler:
         self.loaded_data['upscale_parameters'] = {}
         self.loaded_data['edited_well_logs'] = {}
 
-    def resource_path(self,relative_path):
+    def resource_path(self, relative_path):
         """
-        Get absolute path to resource, works for dev and for PyInstaller.
-
-        :param relative_path: Path relative to the script's directory.
-        :return: Absolute path to the resource.
+        Get absolute path to resource, relative to the geoagent package root.
         """
-        try:
-            # PyInstaller creates a temporary folder and stores its path in _MEIPASS
-            base_path = sys._MEIPASS
-        except AttributeError:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
+        # Resolve relative to the geoagent package directory (one level up from core/)
+        package_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        return os.path.join(package_root, relative_path)
     def save_edited_logs(self, well_name, log_df):
         if 'edited_well_logs' not in self.loaded_data:
             self.loaded_data['edited_well_logs'] = {}
@@ -45,8 +38,11 @@ class WellLogHandler:
         return None
     def load_mnemonics_map(self):
         mnemonics_map = {}
-        mnemonics_file = self.resource_path('assets\\mnemonics.txt')
-        
+        mnemonics_file = self.resource_path(os.path.join('assets', 'mnemonics.txt'))
+
+        if not os.path.exists(mnemonics_file):
+            return mnemonics_map
+
         with open(mnemonics_file, 'r') as f:
             for line in f:
                 parts = line.strip().split('=')
@@ -55,7 +51,7 @@ class WellLogHandler:
                     aliases = [alias.strip() for alias in parts[1].split()]
                     for alias in aliases:
                         mnemonics_map[alias] = standard_name
-        
+
         return mnemonics_map
     def delete_upscaled_logs(self, well_name):
         upscaled_logs = self.loaded_data.get('upscaled_logs', {})
@@ -185,8 +181,8 @@ class WellLogHandler:
 
     def get_well_logs_for_well(self, well_name):
         well_logs = self.get_data('well_logs')
-        
-        if well_name not in well_logs:
+
+        if well_logs is None or well_name not in well_logs:
             print(f"Well '{well_name}' not found in well logs database")
             return None
 
