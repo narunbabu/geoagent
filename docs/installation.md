@@ -8,7 +8,7 @@
 ## Install from Source
 
 ```bash
-git clone https://github.com/arunbharadwaj/geoagent.git
+git clone https://github.com/narunbabu/geoagent.git
 cd geoagent
 pip install -e .
 ```
@@ -16,7 +16,7 @@ pip install -e .
 ## Install from GitHub
 
 ```bash
-pip install git+https://github.com/arunbharadwaj/geoagent.git
+pip install git+https://github.com/narunbabu/geoagent.git
 ```
 
 ## Dependencies

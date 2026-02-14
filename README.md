@@ -9,12 +9,12 @@ Load well data, generate synthetic seismograms, create professional well log cor
 ## Install
 
 ```bash
-git clone https://github.com/arunbharadwaj/geoagent.git
+git clone https://github.com/narunbabu/geoagent.git
 cd geoagent
 pip install -e .
 
 # Or directly from GitHub:
-pip install git+https://github.com/arunbharadwaj/geoagent.git
+pip install git+https://github.com/narunbabu/geoagent.git
 ```
 
 **Dependencies** (all installed automatically): numpy, scipy, pandas, matplotlib, segyio, lasio, tqdm

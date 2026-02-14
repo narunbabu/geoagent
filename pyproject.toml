@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Arun Bharadwaj"},
+    {name = "Arun Babu Nalamara"},
 ]
 keywords = ["geoscience", "seismic", "well-log", "synthetic", "correlation", "petrophysics"]
 classifiers = [
@@ -44,9 +44,9 @@ horizons = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/arunbharadwaj/geoagent"
-Repository = "https://github.com/arunbharadwaj/geoagent"
-Issues = "https://github.com/arunbharadwaj/geoagent/issues"
+Homepage = "https://github.com/narunbabu/geoagent"
+Repository = "https://github.com/narunbabu/geoagent"
+Issues = "https://github.com/narunbabu/geoagent/issues"
 
 [tool.setuptools.packages.find]
 include = ["geoagent*"]
