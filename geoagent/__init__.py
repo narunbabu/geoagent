@@ -11,4 +11,5 @@ __license__ = "Apache-2.0"
 
 # Convenience imports for common usage
 from geoagent.core.data_manager import CoreDataManager
+from geoagent.io.project_builder import ProjectBuilder
 from geoagent.plotting.config import SectionPlotConfig, FormationTop
