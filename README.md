@@ -2,6 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Tests](https://img.shields.io/badge/tests-65%20passed-brightgreen.svg)](tests/)
 
 Load well data, generate synthetic seismograms, create professional well log correlation sections, and plot location maps — all in pure Python. No PyTorch, no GUI required.
 
@@ -67,9 +68,12 @@ plot_correlation_section(section_data, ["WELL-1", "WELL-2", "WELL-3"],
 - Sampling interval auto-guard (0.25ms ML vs 2ms seismic)
 
 **Visualization**
+- Seismic sections: variable-density and wiggle trace display with horizon overlays and well markers
+- Single-well log panels: 5-track (Depth, GR, LLD, NPHI+RHOB, DT) with formation tops
 - Well log correlation sections: 6-track layout (MD, TVDSS, GR, LLD, NPHI+RHOB, DT), datum flattening, formation top connection lines
 - Location maps: 1:1 aspect ratio, deviated well paths, north arrow, scale bar, block boundary polygon
 - Synthetic tie 8-panel figures: TDR, sonic, density, impedance, reflectivity, seismic, synthetic, wavelet
+- Horizon interpolation at well locations and along arbitrary lines
 
 **Well Data Utilities**
 - Deviation survey processing: TVDSS computation, well path XY extraction
@@ -85,8 +89,11 @@ geoagent/
 ├── io/            # File I/O (project loader, polygon utils)
 ├── well/          # Well utilities (deviation, tops, log windowing, mnemonics)
 ├── synthetic/     # Synthetic tie pipeline, bulk shift, wavelet functions
-├── plotting/      # Section plotter, map plotter, config dataclasses
-└── utils/         # Shared utilities (safe_print, twt_utils, interpolation)
+├── plotting/      # Section plotter, map plotter, seismic display, well panels, config
+└── utils/         # Shared utilities (safe_print, twt_utils, interpolation, spatial indexer)
+examples/          # 5 runnable scripts + 2 Jupyter notebooks
+tests/             # 65 unit tests across 9 modules
+docs/              # Installation, quickstart, API reference, data formats
 ```
 
 ## Data Format Support
@@ -100,6 +107,36 @@ geoagent/
 | Checkshots | Petrel ASCII | `.asc` |
 | Formation Tops | Petrel ASCII | `.tops` |
 | Horizons | ZMAP grid | `.zmap` |
+
+## Examples
+
+See `examples/` for complete runnable scripts:
+
+| Script | Description |
+|--------|-------------|
+| `01_load_project.py` | Load project, list wells and surveys |
+| `02_well_log_panel.py` | Single-well 5-track log display |
+| `03_location_map.py` | Well location map with block boundary |
+| `04_synthetic_tie.py` | Full synthetic seismogram workflow |
+| `05_bulk_shift_scan.py` | CC-scan bulk shift optimization |
+
+Jupyter notebooks: `examples/notebooks/quickstart.ipynb` and `well_correlation.ipynb`.
+
+## Documentation
+
+- [Installation](docs/installation.md)
+- [Quickstart Guide](docs/quickstart.md)
+- [API Reference](docs/api_reference.md)
+- [Data Formats](docs/data_formats.md)
+
+## Testing
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -v
+```
+
+65 tests covering all major modules (data manager, handlers, synthetic functions, visualization, interpolation, spatial indexing).
 
 ## GeoAgent Pro & Enterprise
 
