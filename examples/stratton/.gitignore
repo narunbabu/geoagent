@@ -1,0 +1,6 @@
+# Downloaded data (large files)
+data/seismic/
+data/wells/
+
+# Built project output
+output/
