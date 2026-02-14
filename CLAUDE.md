@@ -6,9 +6,31 @@
 
 **The Ultimate Goal**: If GeoAgent can programmatically build a project like test2 (the Bakrol 3D reference project), it passes as a proper Geophysicist. Every feature in GeoAgent must serve this end — creating SeisTrans-compatible interpretation projects from raw geoscience data.
 
+## Development Environment
+
+All Python commands **must** be run through PowerShell using the `torch128` conda environment. Never run `python3` or `python` directly from bash — it won't have access to the torch128 environment with the required packages (numpy, pandas, scipy, segyio, lasio, matplotlib, etc.).
+
+```bash
+# Running a script
+powershell.exe -Command "conda activate torch128; python script.py"
+
+# Inline Python
+powershell.exe -Command "conda activate torch128; python -c 'import geoagent; print(\"OK\")'"
+
+# Running tests
+powershell.exe -Command "conda activate torch128; cd C:/ArunApps/GeoAgent; pytest tests/ -v"
+
+# Installing in dev mode
+powershell.exe -Command "conda activate torch128; cd C:/ArunApps/GeoAgent; pip install -e ."
+```
+
+Windows paths work with forward slashes (`C:/ArunApps/GeoAgent`) or backslashes. When using backslashes inside PowerShell strings, escape or single-quote them.
+
 ## Running
 
 ```bash
+# All commands below assume torch128 conda env via PowerShell (see above)
+
 # Install in dev mode
 pip install -e .
 
