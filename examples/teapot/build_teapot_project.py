@@ -16,8 +16,8 @@ Usage:
     python examples/teapot/build_teapot_project.py
 
 Output:
-    examples/teapot/output/teapot_project/   — project data folder
-    examples/teapot/output/teapot_project.str — SeisTrans project pointer
+    G:/2026/download_opendata/examples/teapot/teapot_project/   — project data folder
+    G:/2026/download_opendata/examples/teapot/teapot_project.str — SeisTrans project pointer
 
 Data source:
     US DOE / Rocky Mountain Oilfield Testing Center (RMOTC)
@@ -59,7 +59,7 @@ from geoagent.synthetic.wavelet_functions import ricker_wavelet
 # ---------------------------------------------------------------------------
 
 DATA_DIR = Path("G:/2026/download_opendata/examples/teapot/data/DataSets")
-OUTPUT_DIR = script_dir / "output"
+OUTPUT_DIR = Path("G:/2026/download_opendata/examples/teapot")
 PROJECT_FOLDER = str(OUTPUT_DIR / "teapot_project")
 PROJECT_NAME = "TeapotDome"
 
