@@ -142,7 +142,9 @@ def parse_table2(table2_path):
               f"KB={kb_elev} ft, X={state_x:.0f}, Y={state_y:.0f}")
 
     df = pd.DataFrame(records)
-    df = df.set_index('Name')
+    # SeisTrans format: integer index, Name as column (NOT as index)
+    df = df.drop_duplicates(subset=['Name'], keep='first')
+    df = df.reset_index(drop=True)
     return df
 
 

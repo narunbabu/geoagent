@@ -165,8 +165,27 @@ class ProjectBuilder:
                           'Surface Y', 'Well datum name', 'Well datum value',
                           'TD (MD)', etc.  Can be indexed by well name or
                           have a 'Name' / 'Well Name' column.
+
+        The DataFrame is normalized to SeisTrans format: integer index
+        with 'Name' as a regular column.  If 'Name' is currently the
+        index, it is reset to a column automatically.
         """
-        self.well_handler.loaded_data['well_heads'] = well_heads_df
+        import pandas as pd
+
+        df = well_heads_df.copy()
+
+        # Normalize: ensure 'Name' is a column, not the index
+        if 'Name' not in df.columns:
+            if df.index.name == 'Name':
+                df = df.reset_index()
+            elif hasattr(df.index, 'names') and 'Name' in df.index.names:
+                df = df.reset_index()
+
+        # Ensure integer index
+        if df.index.name is not None:
+            df = df.reset_index(drop=True)
+
+        self.well_handler.loaded_data['well_heads'] = df
 
     def set_deviation(self, well_name, well_info, dev_data):
         """

@@ -382,7 +382,10 @@ class CoreDataManager:
     def get_available_wells(self):
         """Get list of available well names."""
         well_heads = self.well_handler.get_data('well_heads')
-        if well_heads is not None and hasattr(well_heads, 'index'):
+        if well_heads is not None and not well_heads.empty:
+            # SeisTrans format: Name is a column, index is integer
+            if 'Name' in well_heads.columns:
+                return list(well_heads['Name'])
             return list(well_heads.index)
         return []
 

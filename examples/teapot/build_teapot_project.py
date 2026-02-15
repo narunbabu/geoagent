@@ -88,8 +88,10 @@ def parse_well_headers_xlsx(xlsx_path):
     """
     Parse TeapotDomeWellHeaders02-09-10.xlsx into a SeisTrans-compatible DataFrame.
 
-    The XLSX has a descriptive header in row 0, column names in row 0
-    (merged with title text), and data starting at row 1.
+    Returns:
+        tuple: (well_heads_df, api_to_name) where:
+            - well_heads_df is a DataFrame with integer index and 'Name' column
+            - api_to_name maps normalized 12-digit API → XLSX well name
     """
     print(f"  Parsing well headers: {os.path.basename(xlsx_path)}")
 
@@ -107,6 +109,7 @@ def parse_well_headers_xlsx(xlsx_path):
     df = df.dropna(subset=['Well Number'])
 
     records = []
+    api_to_name = {}
     for _, row in df.iterrows():
         try:
             well_num = str(row.get('Well Number', '')).strip()
@@ -120,6 +123,12 @@ def parse_well_headers_xlsx(xlsx_path):
             td = _safe_float(row.get('Total Depth', 0))
 
             well_name = well_num  # Use well number as name (e.g., "34-A-21")
+
+            # Build API → name mapping for LAS file matching
+            if api:
+                api_digits = ''.join(c for c in api if c.isdigit())
+                if api_digits:
+                    api_to_name[api_digits] = well_name
 
             records.append({
                 'Name': well_name,
@@ -147,13 +156,13 @@ def parse_well_headers_xlsx(xlsx_path):
             continue
 
     result = pd.DataFrame(records)
-    result = result.set_index('Name')
-
-    # Remove duplicates (keep first)
-    result = result[~result.index.duplicated(keep='first')]
+    # SeisTrans format: integer index, Name as column (NOT as index)
+    result = result.drop_duplicates(subset=['Name'], keep='first')
+    result = result.reset_index(drop=True)
 
     print(f"    {len(result)} wells parsed")
-    return result
+    print(f"    {len(api_to_name)} API-to-name mappings built")
+    return result, api_to_name
 
 
 def _safe_float(val, default=0.0):
@@ -167,16 +176,59 @@ def _safe_float(val, default=0.0):
         return default
 
 
-def extract_well_name_from_las(las_path):
-    """Extract well identifier from LAS WELL header."""
+def extract_api_from_las_filename(las_path):
+    """
+    Extract normalized API number from LAS filename.
+
+    Filenames are like '49025063250000_483788.las'. The first 12 digits
+    of the part before the underscore match the XLSX API Number format.
+    """
+    fname = os.path.splitext(os.path.basename(las_path))[0]
+    parts = fname.split('_')
+    if parts:
+        api_digits = ''.join(c for c in parts[0] if c.isdigit())
+        # XLSX uses 12-digit API; LAS filenames use 14-digit
+        if len(api_digits) >= 12:
+            return api_digits[:12]
+    return None
+
+
+def resolve_well_name(las_path, api_to_name):
+    """
+    Resolve the well name for a LAS file, using API matching first.
+
+    Args:
+        las_path: Path to the LAS file.
+        api_to_name: Dict mapping 12-digit API → XLSX well name.
+
+    Returns:
+        Well name string.
+    """
+    # Try API-based matching from filename (most reliable)
+    api = extract_api_from_las_filename(las_path)
+    if api and api in api_to_name:
+        return api_to_name[api]
+
+    # Try API/UWI from LAS header
+    try:
+        las = lasio.read(las_path)
+        for field in ['API', 'UWI']:
+            try:
+                val = str(las.well[field].value).strip()
+                api_digits = ''.join(c for c in val if c.isdigit())
+                if api_digits and api_digits in api_to_name:
+                    return api_to_name[api_digits]
+            except (KeyError, AttributeError):
+                pass
+    except Exception:
+        pass
+
+    # Fallback: extract from LAS WELL header
     try:
         las = lasio.read(las_path)
         well_str = str(las.well['WELL'].value).strip()
-        # LAS WELL field is like "NAVAL PETROLEUM RESERVE 3  #62-S-14"
-        # Extract the well number after the #
         if '#' in well_str:
-            well_num = well_str.split('#')[-1].strip()
-            return well_num
+            return well_str.split('#')[-1].strip()
         return well_str
     except Exception:
         return os.path.splitext(os.path.basename(las_path))[0]
@@ -254,9 +306,10 @@ def main():
 
     # --- Import well headers ---
     well_heads_df = None
+    api_to_name = {}
     if headers_path.exists():
         print(f"\n--- Well Headers ---")
-        well_heads_df = parse_well_headers_xlsx(str(headers_path))
+        well_heads_df, api_to_name = parse_well_headers_xlsx(str(headers_path))
 
     # --- Import well logs ---
     if las_files:
@@ -265,10 +318,15 @@ def main():
         print(f"  Importing {n_to_import} of {len(las_files)} LAS files...")
 
         imported_wells = []
+        api_matched = 0
         failed = 0
         for las_path in las_files[:n_to_import]:
             try:
-                well_name = extract_well_name_from_las(las_path)
+                well_name = resolve_well_name(las_path, api_to_name)
+                # Check if this was an API-based match
+                api = extract_api_from_las_filename(las_path)
+                if api and api in api_to_name:
+                    api_matched += 1
                 builder.well_log_handler.import_well_logs(well_name, las_path)
                 imported_wells.append(well_name)
             except Exception as e:
@@ -277,14 +335,23 @@ def main():
                     print(f"    Warning: Failed to import {os.path.basename(las_path)}: {e}")
 
         print(f"  Imported: {len(imported_wells)} wells, {failed} failed")
+        print(f"  API-matched: {api_matched} / {len(imported_wells)}")
         if imported_wells:
             print(f"  First 10: {imported_wells[:10]}")
 
     # Set well heads
     if well_heads_df is not None:
-        # Match well heads to imported wells where possible
         builder.set_well_heads(well_heads_df)
         print(f"  Well heads set: {len(well_heads_df)} entries")
+
+        # Verify well name matching
+        log_names = set(builder.well_log_handler.loaded_data.get('well_logs', {}).keys())
+        head_names = set(well_heads_df['Name'].tolist())
+        matched = log_names & head_names
+        unmatched = log_names - head_names
+        print(f"  Well logs matching headers: {len(matched)} / {len(log_names)}")
+        if unmatched:
+            print(f"  Unmatched log wells: {sorted(unmatched)[:10]}")
 
     # --- Add wavelets ---
     print(f"\n--- Wavelets ---")

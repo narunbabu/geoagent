@@ -256,7 +256,22 @@ class TestWellData:
             'Surface Y': [2541100, 2541200],
         })
         builder.set_well_heads(df)
-        assert builder.well_handler.loaded_data['well_heads'] is df
+        stored = builder.well_handler.loaded_data['well_heads']
+        assert list(stored['Name']) == ['W-1', 'W-2']
+        assert 'Name' in stored.columns  # Must be a column, not index
+
+    def test_set_well_heads_normalizes_name_index(self, builder):
+        """If Name is the DataFrame index, set_well_heads resets it to a column."""
+        df = pd.DataFrame({
+            'Name': ['W-1', 'W-2'],
+            'Surface X': [270100, 270200],
+        })
+        df = df.set_index('Name')  # Simulate the old buggy format
+        builder.set_well_heads(df)
+        stored = builder.well_handler.loaded_data['well_heads']
+        assert 'Name' in stored.columns
+        assert list(stored['Name']) == ['W-1', 'W-2']
+        assert stored.index.tolist() == [0, 1]  # Integer index
 
     def test_set_deviation(self, builder):
         dev = np.zeros((10, 3))
@@ -305,7 +320,9 @@ class TestWellLogImport:
             'Surface Y': [2541100, 2541200],
         })
         builder.import_wells_from_las(las_dir, well_heads_df=df)
-        assert builder.well_handler.loaded_data['well_heads'] is df
+        stored = builder.well_handler.loaded_data['well_heads']
+        assert list(stored['Name']) == ['WELL-A', 'WELL-B']
+        assert 'Name' in stored.columns
 
 
 class TestWavelets:
