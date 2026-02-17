@@ -418,7 +418,7 @@ def plot_synthetic_tie(
     # ---- Panel 3: Impedance ----
     ax = axes[3]
     imp = np.asarray(impedance_ext).flatten()
-    wt = np.asarray(well_times_ext).flatten()[:len(imp)]
+    wt = np.asarray(well_times_ext).flatten()[:len(imp)] + best_shift
     ax.plot(imp, wt, color=top_colors[3], lw=0.7)
     ax.set_title('Impedance', fontsize=fs, pad=10, color=top_colors[3])
     ax.set_xlabel('AI', fontsize=fs - 1)
@@ -429,7 +429,7 @@ def plot_synthetic_tie(
     # ---- Panel 4: Reflectivity ----
     ax = axes[4]
     refl = np.asarray(reflectivity).flatten()
-    refl_times = np.asarray(well_times_ext).flatten()[:len(refl)]
+    refl_times = np.asarray(well_times_ext).flatten()[:len(refl)] + best_shift
     ax.plot([0, 0], [refl_times[0], refl_times[-1]], color='#90A4AE', lw=0.5)
     ax.hlines(refl_times, 0, refl, color=top_colors[4], lw=0.5)
     ax.set_title('Refl. Coeff', fontsize=fs, pad=10, color=top_colors[4])
